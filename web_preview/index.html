@@ -1,0 +1,1179 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Mitfahrgelegenheiten-Portal • Interaktive Web-Vorschau</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0b1329;
+      --surface: #1e293b;
+      --surface-card: #151e32;
+      --border: #334155;
+      --primary: #3b82f6;
+      --primary-hover: #2563eb;
+      --success: #10b981;
+      --warning: #f59e0b;
+      --danger: #ef4444;
+      --text: #f8fafc;
+      --text-muted: #94a3b8;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Plus Jakarta Sans', sans-serif;
+      background-color: var(--bg);
+      color: var(--text);
+      display: flex;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    /* Sidebar Navigation */
+    aside {
+      width: 250px;
+      background: var(--surface);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      padding: 24px 20px;
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      border-bottom: 1px solid var(--border);
+    }
+    .brand-icon {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--primary);
+      width: 42px;
+      height: 42px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      border: 1px solid rgba(59, 130, 246, 0.4);
+    }
+    .brand-title {
+      font-weight: 700;
+      font-size: 16px;
+      letter-spacing: -0.3px;
+    }
+    .brand-sub {
+      font-size: 11px;
+      color: var(--warning);
+      font-weight: 600;
+    }
+
+    nav {
+      padding: 16px 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      flex: 1;
+    }
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+      border-radius: 10px;
+      color: var(--text-muted);
+      cursor: pointer;
+      font-weight: 500;
+      font-size: 14px;
+      transition: all 0.2s ease;
+    }
+    .nav-item:hover {
+      background: rgba(255, 255, 255, 0.05);
+      color: #fff;
+    }
+    .nav-item.active {
+      background: rgba(59, 130, 246, 0.15);
+      color: #60a5fa;
+      font-weight: 600;
+      border: 1px solid rgba(59, 130, 246, 0.3);
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+    }
+
+    header {
+      padding: 18px 28px;
+      background: var(--surface);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    .header-title {
+      font-size: 18px;
+      font-weight: 700;
+    }
+    .badge-status {
+      padding: 6px 14px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--warning);
+      border: 1px solid rgba(245, 158, 11, 0.3);
+    }
+
+    .content {
+      padding: 28px;
+      flex: 1;
+    }
+
+    /* Tab screens */
+    .tab-view { display: none; }
+    .tab-view.active { display: block; animation: fadeIn 0.25s ease; }
+    @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+
+    /* Cards & Grids */
+    .grid-4 {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+      gap: 16px;
+      margin-bottom: 28px;
+    }
+    .kpi-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      transition: transform 0.2s, border-color 0.2s;
+    }
+    .kpi-card:hover {
+      transform: translateY(-2px);
+      border-color: rgba(59, 130, 246, 0.5);
+    }
+    .kpi-title { font-size: 13px; color: var(--text-muted); margin-bottom: 6px; }
+    .kpi-value { font-size: 26px; font-weight: 800; }
+    .kpi-sub { font-size: 12px; color: var(--text-muted); margin-top: 4px; }
+    .kpi-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+    }
+
+    /* Section Box */
+    .section-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 14px;
+      padding: 22px;
+      margin-bottom: 24px;
+    }
+    .section-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 18px;
+    }
+    .section-title { font-size: 18px; font-weight: 700; }
+
+    /* Tables */
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+    }
+    th {
+      background: var(--surface-card);
+      padding: 12px 16px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+    }
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border);
+      font-size: 14px;
+    }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: rgba(255, 255, 255, 0.02); }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.2s;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: var(--primary-hover); }
+    .btn-success { background: var(--success); color: #fff; }
+    .btn-success:hover { background: #059669; }
+    .btn-outline {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+    }
+    .btn-outline:hover { background: rgba(255, 255, 255, 0.05); }
+
+    /* Inputs */
+    .form-group { margin-bottom: 16px; }
+    label { display: block; font-size: 13px; color: var(--text-muted); margin-bottom: 6px; font-weight: 500; }
+    input, select, textarea {
+      width: 100%;
+      padding: 11px 14px;
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      color: #fff;
+      font-family: inherit;
+      font-size: 14px;
+      outline: none;
+    }
+    input:focus, select:focus, textarea:focus { border-color: var(--primary); }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.7);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+    }
+    .modal-box {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      width: 520px;
+      max-width: 90vw;
+      padding: 24px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+    }
+
+    .pill {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 6px;
+      font-size: 12px;
+      font-weight: 700;
+    }
+    .pill-green { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .pill-red { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .pill-blue { background: rgba(59, 130, 246, 0.15); color: #60a5fa; border: 1px solid rgba(59, 130, 246, 0.3); }
+
+    .summary-pills {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+    .sum-box {
+      background: var(--surface-card);
+      border: 1px solid var(--border);
+      padding: 10px 16px;
+      border-radius: 10px;
+      font-size: 13px;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Navigation -->
+  <aside>
+    <div class="brand">
+      <div class="brand-icon">🚗</div>
+      <div>
+        <div class="brand-title">Mitfahr-Portal</div>
+        <div class="brand-sub">Google Apps Script API</div>
+      </div>
+    </div>
+    <nav>
+      <div class="nav-item active" onclick="switchTab('dashboard')">📊 Übersicht & Distanzen</div>
+      <div class="nav-item" onclick="switchTab('participants')">👥 Teilnehmerverwaltung</div>
+      <div class="nav-item" onclick="switchTab('destinations')">🏢 Firmenziele</div>
+      <div class="nav-item" onclick="switchTab('rides')">🚘 Fahrtenprotokoll</div>
+      <div class="nav-item" onclick="switchTab('billing')">💰 Monatsabrechnung</div>
+      <div class="nav-item" onclick="switchTab('settings')">⚙️ Server-Einstellungen</div>
+    </nav>
+  </aside>
+
+  <!-- Main Content Area -->
+  <main>
+    <header>
+      <div class="header-title" id="pageTitle">Dashboard & Schnellprüfer</div>
+      <div class="badge-status" id="connStatus">● Lokale Testdaten aktiv (Mock-Modus)</div>
+    </header>
+
+    <div class="content">
+
+      <!-- 1. DASHBOARD TAB -->
+      <section id="tab-dashboard" class="tab-view active">
+        <div class="grid-4">
+          <div class="kpi-card" onclick="switchTab('participants')">
+            <div>
+              <div class="kpi-title">Aktive Teilnehmer</div>
+              <div class="kpi-value" id="kpiParticipants">5</div>
+              <div class="kpi-sub">Wohnadressen erfasst</div>
+            </div>
+            <div class="kpi-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">👥</div>
+          </div>
+          <div class="kpi-card" onclick="switchTab('destinations')">
+            <div>
+              <div class="kpi-title">Firmenziele</div>
+              <div class="kpi-value" id="kpiDestinations">3</div>
+              <div class="kpi-sub">Standorte / Werke</div>
+            </div>
+            <div class="kpi-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">🏢</div>
+          </div>
+          <div class="kpi-card" onclick="switchTab('rides')">
+            <div>
+              <div class="kpi-title">Fahrten diesen Monat</div>
+              <div class="kpi-value" id="kpiRides">5</div>
+              <div class="kpi-sub">Oktober 2026</div>
+            </div>
+            <div class="kpi-icon" style="background: rgba(245, 158, 11, 0.15); color: #fbbf24;">🚘</div>
+          </div>
+          <div class="kpi-card" onclick="switchTab('billing')">
+            <div>
+              <div class="kpi-title">Gesamte Fahrstrecke</div>
+              <div class="kpi-value" id="kpiKm">135.6 km</div>
+              <div class="kpi-sub">Google Maps ermittelt</div>
+            </div>
+            <div class="kpi-icon" style="background: rgba(139, 92, 246, 0.15); color: #a78bfa;">🗺️</div>
+          </div>
+        </div>
+
+        <!-- Google Maps Live Distance Box -->
+        <div class="section-box" style="background: linear-gradient(135deg, #1e293b, #1b243a); border-color: rgba(59, 130, 246, 0.3);">
+          <div class="section-header">
+            <div>
+              <div class="section-title">🗺️ Google Maps Entfernungsberechnung (doGet ?action=calculateDistance)</div>
+              <div style="font-size: 13px; color: var(--text-muted); margin-top: 4px;">
+                Ermittelt die exakte Fahrtstrecke und Fahrzeit zwischen Teilnehmer-Wohnadresse und Firmenziel.
+              </div>
+            </div>
+          </div>
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 16px;">
+            <div class="form-group">
+              <label>Startadresse (Teilnehmer)</label>
+              <select id="calcOrigin"></select>
+            </div>
+            <div class="form-group">
+              <label>Zieladresse (Firma / Werk)</label>
+              <select id="calcDestination"></select>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="testCalculateDistance()">🚀 Distanz & Fahrzeit abfragen</button>
+
+          <div id="calcResultBox" style="display: none; margin-top: 18px; padding: 16px; background: var(--surface-card); border-radius: 10px; border: 1px solid rgba(16, 185, 129, 0.4);">
+            <div style="display: flex; justify-content: space-between; align-items: center;">
+              <div>
+                <div style="font-size: 18px; font-weight: 700; color: #34d399;" id="calcResultKm">13.5 km • 22 Min.</div>
+                <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px;" id="calcResultRoute">Von Kaiserstraße 45 nach Brüningstraße 50</div>
+              </div>
+              <div class="sum-box" style="text-align: right;">
+                <div style="font-size: 11px; color: var(--text-muted);">Fahrtkosten (0,30 €/km)</div>
+                <div style="font-weight: 700; color: #fbbf24; font-size: 16px;" id="calcResultCost">4,05 €</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recent Rides -->
+        <div class="section-box">
+          <div class="section-header">
+            <div class="section-title">Zuletzt erfasste Fahrten</div>
+            <button class="btn btn-outline" onclick="switchTab('rides')">Alle Fahrten anzeigen ➔</button>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Fahrer</th>
+                <th>Ziel</th>
+                <th>Mitfahrer</th>
+                <th>Distanz</th>
+                <th>Kosten</th>
+              </tr>
+            </thead>
+            <tbody id="dashboardRecentRides"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 2. PARTICIPANTS TAB -->
+      <section id="tab-participants" class="tab-view">
+        <div class="section-header">
+          <div>
+            <div class="section-title">👥 Teilnehmerverwaltung & Wohnadressen</div>
+            <div style="font-size: 13px; color: var(--text-muted);">Erfassung aller Fahrer und Mitfahrer mit Wohnadresse</div>
+          </div>
+          <button class="btn btn-primary" onclick="openParticipantModal()">+ Neuer Teilnehmer</button>
+        </div>
+        <div class="section-box" style="padding: 0; overflow: hidden;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Name</th>
+                <th>Wohnadresse (Startpunkt)</th>
+                <th>E-Mail & Telefon</th>
+                <th>Rolle</th>
+                <th>Status</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="participantsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 3. DESTINATIONS TAB -->
+      <section id="tab-destinations" class="tab-view">
+        <div class="section-header">
+          <div>
+            <div class="section-title">🏢 Firmenziele & Standorte</div>
+            <div style="font-size: 13px; color: var(--text-muted);">Tabelle der Zieladressen (Werke, Werkeingänge, Büros)</div>
+          </div>
+          <button class="btn btn-success" onclick="openDestinationModal()">+ Neues Firmenziel</button>
+        </div>
+        <div class="section-box" style="padding: 0; overflow: hidden;">
+          <table>
+            <thead>
+              <tr>
+                <th>ID</th>
+                <th>Firmenname</th>
+                <th>Zieladresse (Google Maps)</th>
+                <th>Pforte / Tor / Kontakt</th>
+                <th>Notizen</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="destinationsTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 4. RIDES TAB -->
+      <section id="tab-rides" class="tab-view">
+        <div class="section-header">
+          <div>
+            <div class="section-title">🚘 Fahrtenprotokoll & Fahrgemeinschaften</div>
+            <div style="font-size: 13px; color: var(--text-muted);">Dokumentation der durchgeführten Fahrten zur Abrechnung</div>
+          </div>
+          <button class="btn btn-primary" onclick="openRideModal()">+ Fahrt erfassen</button>
+        </div>
+        <div class="section-box" style="padding: 0; overflow: hidden;">
+          <table>
+            <thead>
+              <tr>
+                <th>Datum</th>
+                <th>Fahrer</th>
+                <th>Ziel / Firma</th>
+                <th>Mitfahrer</th>
+                <th>Richtung</th>
+                <th>Strecke</th>
+                <th>Gesamtkosten</th>
+                <th>Aktionen</th>
+              </tr>
+            </thead>
+            <tbody id="ridesTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 5. BILLING TAB -->
+      <section id="tab-billing" class="tab-view">
+        <div class="section-header">
+          <div>
+            <div class="section-title">💰 Monatsabrechnung pro Teilnehmer</div>
+            <div style="font-size: 13px; color: var(--text-muted);">
+              Kilometerpauschale (0,30 €/km) aufgeteilt auf Mitfahrer mit Gutschrift an den Fahrer
+            </div>
+          </div>
+          <div style="display: flex; gap: 10px;">
+            <button class="btn btn-outline" onclick="copyBillingCsv()">📋 Als CSV kopieren</button>
+            <button class="btn btn-success" onclick="executeMonthlyBilling()">⚡ Abrechnung berechnen (doPost)</button>
+          </div>
+        </div>
+
+        <div class="summary-pills">
+          <div class="sum-box">Abrechnungsmonat: <strong id="billMonth">Oktober 2026</strong></div>
+          <div class="sum-box">Fahrergutschriften gesamt: <strong style="color: #34d399;" id="billTotalCredit">+0,00 €</strong></div>
+          <div class="sum-box">Mitfahrer-Anteile gesamt: <strong style="color: #fbbf24;" id="billTotalDebit">-0,00 €</strong></div>
+          <div class="sum-box">Fahrkassen-Bilanz: <strong style="color: #a78bfa;" id="billBalance">0,00 € (Ausgeglichen)</strong></div>
+        </div>
+
+        <div class="section-box" style="padding: 0; overflow: hidden;">
+          <table>
+            <thead>
+              <tr>
+                <th>Teilnehmer</th>
+                <th>Fahrten (F / M)</th>
+                <th>km als Fahrer</th>
+                <th>km als Mitfahrer</th>
+                <th>Gutschrift Fahrer (+)</th>
+                <th>Lastschrift Mitfahrer (-)</th>
+                <th>Netto-Saldo</th>
+                <th>Auszahlung / Status</th>
+              </tr>
+            </thead>
+            <tbody id="billingTableBody"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 6. SETTINGS TAB -->
+      <section id="tab-settings" class="tab-view">
+        <div class="section-title" style="margin-bottom: 6px;">⚙️ Server-Einstellungen & Google Apps Script Verbindung</div>
+        <div style="font-size: 13px; color: var(--text-muted); margin-bottom: 24px;">
+          Konfigurieren Sie hier die Verbindung zur Google Apps Script Web App (doGet / doPost).
+        </div>
+
+        <div class="section-box">
+          <div class="form-group">
+            <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #fff; font-weight: 600;">
+              <input type="checkbox" id="settingMockMode" checked style="width: auto;" onchange="toggleMockMode(this.checked)">
+              Demo-Modus verwenden (Offline mit Beispieldaten testen)
+            </label>
+            <div style="font-size: 12px; color: var(--text-muted); margin-top: 4px; margin-left: 24px;">
+              Deaktivieren Sie diese Option, um direkt mit Ihrem Google Sheet über die Web-App-URL zu kommunizieren.
+            </div>
+          </div>
+
+          <div class="form-group" style="margin-top: 20px;">
+            <label>Google Apps Script Web App URL (doGet / doPost Endpunkt)</label>
+            <input type="text" id="settingWebAppUrl" placeholder="https://script.google.com/macros/s/AKfycbx.../exec">
+          </div>
+
+          <div class="form-group">
+            <label>Kilometerpauschale (€ / km)</label>
+            <input type="number" id="settingKmRate" value="0.30" step="0.05" style="width: 180px;">
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 20px;">
+            <button class="btn btn-primary" onclick="saveSettings()">Einstellungen speichern</button>
+            <button class="btn btn-outline" onclick="testServerPing()">Verbindung testen (doGet ping)</button>
+          </div>
+
+          <div id="pingResult" style="display: none; margin-top: 16px; padding: 12px; border-radius: 8px; font-size: 13px;"></div>
+        </div>
+
+        <div class="section-box" style="background: var(--surface-card);">
+          <div class="section-title" style="font-size: 15px; margin-bottom: 10px;">📋 Schnellstart: Google Sheet Backend einrichten</div>
+          <ol style="margin-left: 20px; font-size: 13px; color: var(--text-muted); line-height: 1.8;">
+            <li>Erstellen Sie eine leere Tabelle auf <a href="https://sheets.new" target="_blank" style="color: #60a5fa;">Google Sheets</a>.</li>
+            <li>Klicken Sie auf <strong>Erweiterungen ➔ Apps Script</strong>.</li>
+            <li>Fügen Sie den Code aus der Datei <code>backend/Code.gs</code> in den Editor ein und speichern Sie.</li>
+            <li>Klicken Sie oben auf <strong>Bereitstellen ➔ Neue Bereitstellung ➔ Web-App</strong> (Zugriff: <em>Jeder</em>).</li>
+            <li>Kopieren Sie die erhaltene Web-App-URL hier in das URL-Feld.</li>
+          </ol>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Modals -->
+  <div class="modal-backdrop" id="modalParticipant">
+    <div class="modal-box">
+      <div class="section-title" style="margin-bottom: 16px;">Teilnehmer erfassen</div>
+      <div class="form-group"><label>Vorname</label><input type="text" id="pFirstName"></div>
+      <div class="form-group"><label>Nachname</label><input type="text" id="pLastName"></div>
+      <div class="form-group"><label>Wohnadresse (Straße, Hausnr., PLZ, Ort)</label><input type="text" id="pAddress" placeholder="z.B. Kaiserstraße 45, 60329 Frankfurt"></div>
+      <div class="form-group"><label>E-Mail</label><input type="email" id="pEmail"></div>
+      <div class="form-group"><label>Telefon</label><input type="tel" id="pPhone"></div>
+      <div class="form-group">
+        <label>Rolle</label>
+        <select id="pRole">
+          <option value="Fahrer">Fahrer (stellt PKW bereit)</option>
+          <option value="Mitfahrer">Mitfahrer (fährt mit)</option>
+          <option value="Flexibel">Flexibel (fährt oder fährt mit)</option>
+        </select>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-outline" onclick="closeModals()">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveParticipantFromModal()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalDestination">
+    <div class="modal-box">
+      <div class="section-title" style="margin-bottom: 16px;">Firmenziel erfassen</div>
+      <div class="form-group"><label>Firmenname</label><input type="text" id="dName" placeholder="z.B. Industriepark Höchst"></div>
+      <div class="form-group"><label>Zieladresse (für Google Maps)</label><input type="text" id="dAddress" placeholder="Brüningstraße 50, 65929 Frankfurt"></div>
+      <div class="form-group"><label>Pforte / Kontakt</label><input type="text" id="dContact" placeholder="Tor Ost"></div>
+      <div class="form-group"><label>Notizen / Parkplatz</label><input type="text" id="dNotes" placeholder="Parkplatz P4"></div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+        <button class="btn btn-outline" onclick="closeModals()">Abbrechen</button>
+        <button class="btn btn-success" onclick="saveDestinationFromModal()">Speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modalRide">
+    <div class="modal-box" style="width: 580px;">
+      <div class="section-title" style="margin-bottom: 16px;">Fahrt erfassen & Kosten aufteilen</div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group"><label>Datum</label><input type="date" id="rDate"></div>
+        <div class="form-group">
+          <label>Fahrtrichtung</label>
+          <select id="rDirection" onchange="updateRideCostPreview()">
+            <option value="Hin- und Rückfahrt">Hin- und Rückfahrt (2x)</option>
+            <option value="Hinfahrt">Nur Hinfahrt (1x)</option>
+            <option value="Rückfahrt">Nur Rückfahrt (1x)</option>
+          </select>
+        </div>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+        <div class="form-group"><label>Fahrer</label><select id="rDriver" onchange="onRideDriverChanged()"></select></div>
+        <div class="form-group"><label>Ziel / Firma</label><select id="rDestination" onchange="onRideDestinationChanged()"></select></div>
+      </div>
+      <div style="display: flex; gap: 12px; align-items: flex-end;">
+        <div class="form-group" style="flex: 1;"><label>Einfache Entfernung (km)</label><input type="number" id="rDistance" value="13.5" step="0.1" onchange="updateRideCostPreview()"></div>
+        <button class="btn btn-outline" style="margin-bottom: 16px;" onclick="autoFetchGoogleMapsForRide()">🗺️ Google Maps Distanz</button>
+      </div>
+      <div class="form-group">
+        <label>Mitfahrer auswählen (Mehrfachauswahl)</label>
+        <div id="rPassengersContainer" style="display: flex; flex-wrap: wrap; gap: 8px; padding: 10px; background: var(--surface-card); border-radius: 8px; border: 1px solid var(--border);"></div>
+      </div>
+      <div class="sum-box" style="margin-bottom: 16px; border-color: rgba(245, 158, 11, 0.4);">
+        <div style="display: flex; justify-content: space-between; font-size: 13px;">
+          <div>Gesamtstrecke: <strong id="rPreviewKm">27.0 km</strong></div>
+          <div>Gesamtkosten: <strong id="rPreviewTotal">8,10 €</strong></div>
+          <div>Pro Mitfahrer: <strong id="rPreviewPerPax">2,70 €</strong></div>
+          <div style="color: #34d399;">Gutschrift Fahrer: <strong id="rPreviewDriver">5,40 €</strong></div>
+        </div>
+      </div>
+      <div style="display: flex; justify-content: flex-end; gap: 10px;">
+        <button class="btn btn-outline" onclick="closeModals()">Abbrechen</button>
+        <button class="btn btn-primary" onclick="saveRideFromModal()">Fahrt speichern</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- JavaScript Application Logic -->
+  <script>
+    // In-Memory Database (Mock Data)
+    let state = {
+      isMock: false,
+      webAppUrl: 'https://script.google.com/macros/s/AKfycbyXXD9ZNsimqjaZE0sT0abVDfOaC5HwaKXC3riBWRVYzVoRZsoC3gtgqnjeCYr3Gato/exec',
+      kmRate: 0.30,
+      participants: [
+        { id: 'T-1001', firstName: 'Max', lastName: 'Mustermann', address: 'Kaiserstraße 45, 60329 Frankfurt am Main', email: 'max@example.de', phone: '+49 170 1234567', role: 'Fahrer', isActive: true },
+        { id: 'T-1002', firstName: 'Anna', lastName: 'Schmidt', address: 'Bockenheimer Landstraße 15, 60325 Frankfurt', email: 'anna@example.de', phone: '+49 171 2345678', role: 'Mitfahrer', isActive: true },
+        { id: 'T-1003', firstName: 'Lukas', lastName: 'Weber', address: 'Schweizer Straße 28, 60594 Frankfurt', email: 'lukas@example.de', phone: '+49 172 3456789', role: 'Flexibel', isActive: true },
+        { id: 'T-1004', firstName: 'Laura', lastName: 'Fischer', address: 'Eckenheimer Landstraße 95, 60318 Frankfurt', email: 'laura@example.de', phone: '+49 173 4567890', role: 'Mitfahrer', isActive: true },
+        { id: 'T-1005', firstName: 'Stefan', lastName: 'Maier', address: 'Berger Straße 142, 60385 Frankfurt', email: 'stefan@example.de', phone: '+49 174 5678901', role: 'Fahrer', isActive: true }
+      ],
+      destinations: [
+        { id: 'Z-2001', name: 'Industriepark Höchst - Tor Ost', address: 'Brüningstraße 50, 65929 Frankfurt am Main', contact: 'Pforte Tor Ost', notes: 'Schichtbeginn 06:00 / 14:00' },
+        { id: 'Z-2002', name: 'Flughafen CargoCity Süd', address: 'Gebäude 532, 60549 Frankfurt am Main', contact: 'Logistik Tor 31', notes: 'Parkausweis P3 erforderlich' },
+        { id: 'Z-2003', name: 'Continental AG Campus', address: 'Guerickestraße 7, 60488 Frankfurt am Main', contact: 'Empfang Hauptgebäude', notes: 'Tiefgarage mit E-Ladesäulen' }
+      ],
+      rides: [
+        { id: 'F-3001', date: '2026-10-02', driverId: 'T-1001', passengerIds: ['T-1002', 'T-1003'], destinationId: 'Z-2001', distanceKm: 13.5, direction: 'Hin- und Rückfahrt', notes: 'Pünktlich 06:15' },
+        { id: 'F-3002', date: '2026-10-05', driverId: 'T-1005', passengerIds: ['T-1004'], destinationId: 'Z-2002', distanceKm: 16.2, direction: 'Hin- und Rückfahrt', notes: 'Normaler Verkehr' },
+        { id: 'F-3003', date: '2026-10-09', driverId: 'T-1001', passengerIds: ['T-1002', 'T-1004'], destinationId: 'Z-2001', distanceKm: 13.5, direction: 'Hin- und Rückfahrt', notes: 'Schichtwechsel' },
+        { id: 'F-3004', date: '2026-10-14', driverId: 'T-1003', passengerIds: ['T-1001', 'T-1002'], destinationId: 'Z-2003', distanceKm: 8.4, direction: 'Hin- und Rückfahrt', notes: 'Lukas fuhr' },
+        { id: 'F-3005', date: '2026-10-18', driverId: 'T-1005', passengerIds: ['T-1002', 'T-1003', 'T-1004'], destinationId: 'Z-2002', distanceKm: 16.2, direction: 'Hin- und Rückfahrt', notes: 'Vollbesetzung' }
+      ],
+      billingRecords: []
+    };
+
+    // Google Maps Heuristic / API
+    function calculateDistanceEstimate(origin, dest) {
+      const dLower = (dest || '').toLowerCase();
+      if (dLower.includes('höchst')) return { km: 13.5, min: 22 };
+      if (dLower.includes('flughafen') || dLower.includes('cargocity')) return { km: 16.2, min: 25 };
+      if (dLower.includes('continental') || dLower.includes('guericke')) return { km: 8.4, min: 15 };
+      return { km: 11.8, min: 18 };
+    }
+
+    // UI Tab Switcher
+    function switchTab(tabId) {
+      document.querySelectorAll('.tab-view').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.nav-item').forEach(el => el.classList.remove('active'));
+      const activeTab = document.getElementById('tab-' + tabId);
+      if (activeTab) activeTab.classList.add('active');
+
+      const titles = {
+        dashboard: 'Übersicht & Google Maps Distanzen',
+        participants: 'Teilnehmerverwaltung & Wohnadressen',
+        destinations: 'Firmenziele & Standorte',
+        rides: 'Fahrtenbuch & Fahrgemeinschaften',
+        billing: 'Monatsabrechnung pro Teilnehmer',
+        settings: 'Server-Einstellungen & Google Apps Script Verbindung'
+      };
+      document.getElementById('pageTitle').textContent = titles[tabId] || 'Mitfahrgelegenheiten';
+
+      // Highlight nav item
+      const navItems = document.querySelectorAll('.nav-item');
+      const idx = ['dashboard', 'participants', 'destinations', 'rides', 'billing', 'settings'].indexOf(tabId);
+      if (idx !== -1 && navItems[idx]) navItems[idx].classList.add('active');
+
+      renderAll();
+    }
+
+    // Render functions
+    function renderAll() {
+      renderDashboard();
+      renderParticipants();
+      renderDestinations();
+      renderRides();
+      renderBilling();
+      populateDropdowns();
+    }
+
+    function renderDashboard() {
+      document.getElementById('kpiParticipants').textContent = state.participants.filter(p => p.isActive).length;
+      document.getElementById('kpiDestinations').textContent = state.destinations.length;
+      document.getElementById('kpiRides').textContent = state.rides.length;
+      const totalKm = state.rides.reduce((acc, r) => acc + (r.distanceKm * (r.direction.includes('Rück') ? 2 : 1)), 0);
+      document.getElementById('kpiKm').textContent = totalKm.toFixed(1) + ' km';
+
+      const recentTbody = document.getElementById('dashboardRecentRides');
+      recentTbody.innerHTML = state.rides.slice(-4).reverse().map(r => {
+        const driver = state.participants.find(p => p.id === r.driverId) || { firstName: 'Unbekannt', lastName: '' };
+        const dest = state.destinations.find(d => d.id === r.destinationId) || { name: 'Ziel' };
+        const effKm = r.distanceKm * (r.direction.includes('Rück') ? 2 : 1);
+        const cost = effKm * state.kmRate;
+        return `
+          <tr>
+            <td><strong>${r.date}</strong></td>
+            <td>${driver.firstName} ${driver.lastName}</td>
+            <td>${dest.name}</td>
+            <td>${r.passengerIds.length} Person(en)</td>
+            <td>${effKm.toFixed(1)} km</td>
+            <td style="color: #34d399; font-weight: bold;">${cost.toFixed(2)} €</td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderParticipants() {
+      const tbody = document.getElementById('participantsTableBody');
+      tbody.innerHTML = state.participants.map(p => `
+        <tr>
+          <td><span style="color: #60a5fa; font-weight: bold;">${p.id}</span></td>
+          <td><strong>${p.firstName} ${p.lastName}</strong></td>
+          <td>📍 ${p.address}</td>
+          <td style="color: var(--text-muted); font-size: 13px;">${p.email}<br>${p.phone}</td>
+          <td><span class="pill pill-${p.role === 'Fahrer' ? 'blue' : (p.role === 'Mitfahrer' ? 'green' : 'blue')}">${p.role}</span></td>
+          <td><span class="pill ${p.isActive ? 'pill-green' : 'pill-red'}">${p.isActive ? 'Aktiv' : 'Inaktiv'}</span></td>
+          <td>
+            <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;" onclick="deleteParticipant('${p.id}')">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderDestinations() {
+      const tbody = document.getElementById('destinationsTableBody');
+      tbody.innerHTML = state.destinations.map(d => `
+        <tr>
+          <td><span style="color: #34d399; font-weight: bold;">${d.id}</span></td>
+          <td><strong>${d.name}</strong></td>
+          <td>🏢 ${d.address}</td>
+          <td>${d.contact}</td>
+          <td style="color: var(--text-muted); font-size: 12px;">${d.notes}</td>
+          <td>
+            <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;" onclick="deleteDestination('${d.id}')">🗑️</button>
+          </td>
+        </tr>
+      `).join('');
+    }
+
+    function renderRides() {
+      const tbody = document.getElementById('ridesTableBody');
+      tbody.innerHTML = state.rides.map(r => {
+        const driver = state.participants.find(p => p.id === r.driverId) || { firstName: '?', lastName: '' };
+        const dest = state.destinations.find(d => d.id === r.destinationId) || { name: '?' };
+        const paxNames = r.passengerIds.map(id => {
+          const p = state.participants.find(item => item.id === id);
+          return p ? p.firstName : id;
+        }).join(', ');
+        const effKm = r.distanceKm * (r.direction.includes('Rück') ? 2 : 1);
+        const cost = effKm * state.kmRate;
+        return `
+          <tr>
+            <td><strong>${r.date}</strong></td>
+            <td>${driver.firstName} ${driver.lastName}</td>
+            <td>${dest.name}</td>
+            <td>${paxNames || 'Keine'} (${r.passengerIds.length})</td>
+            <td><span class="pill pill-blue">${r.direction}</span></td>
+            <td>${effKm.toFixed(1)} km</td>
+            <td style="color: #34d399; font-weight: bold;">${cost.toFixed(2)} €</td>
+            <td>
+              <button class="btn btn-outline" style="padding: 4px 8px; font-size: 12px;" onclick="deleteRide('${r.id}')">🗑️</button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+    }
+
+    function renderBilling() {
+      executeMonthlyBilling(false);
+    }
+
+    function executeMonthlyBilling(showToast = true) {
+      const month = '2026-10';
+      const map = {};
+
+      state.participants.forEach(p => {
+        map[p.id] = {
+          participantId: p.id,
+          name: p.firstName + ' ' + p.lastName,
+          ridesAsDriver: 0,
+          ridesAsPassenger: 0,
+          kmDriver: 0,
+          kmPassenger: 0,
+          credit: 0,
+          debit: 0,
+          balance: 0
+        };
+      });
+
+      state.rides.forEach(r => {
+        const effKm = r.distanceKm * (r.direction.includes('Rück') ? 2 : 1);
+        const driverId = r.driverId;
+        const pax = r.passengerIds.filter(id => id !== driverId);
+        const occupants = 1 + pax.length;
+        const totalCost = effKm * state.kmRate;
+        const costPerPerson = totalCost / occupants;
+        const driverCredit = costPerPerson * pax.length;
+
+        if (map[driverId]) {
+          map[driverId].ridesAsDriver += 1;
+          map[driverId].kmDriver += effKm;
+          map[driverId].credit += driverCredit;
+        }
+
+        pax.forEach(pId => {
+          if (map[pId]) {
+            map[pId].ridesAsPassenger += 1;
+            map[pId].kmPassenger += (effKm / occupants);
+            map[pId].debit += costPerPerson;
+          }
+        });
+      });
+
+      const list = Object.values(map).filter(m => m.ridesAsDriver > 0 || m.ridesAsPassenger > 0);
+      list.forEach(m => m.balance = m.credit - m.debit);
+      state.billingRecords = list;
+
+      let totCredit = list.reduce((a, b) => a + b.credit, 0);
+      let totDebit = list.reduce((a, b) => a + b.debit, 0);
+
+      document.getElementById('billTotalCredit').textContent = '+' + totCredit.toFixed(2) + ' €';
+      document.getElementById('billTotalDebit').textContent = '-' + totDebit.toFixed(2) + ' €';
+      document.getElementById('billBalance').textContent = Math.abs(totCredit - totDebit) < 0.05 ? '0,00 € (Ausgeglichen)' : (totCredit - totDebit).toFixed(2) + ' €';
+
+      const tbody = document.getElementById('billingTableBody');
+      tbody.innerHTML = list.map(item => {
+        const isPayout = item.balance > 0.01;
+        const isDebt = item.balance < -0.01;
+        return `
+          <tr>
+            <td><strong>${item.name}</strong></td>
+            <td>${item.ridesAsDriver} F / ${item.ridesAsPassenger} M</td>
+            <td>${item.kmDriver.toFixed(1)} km</td>
+            <td>${item.kmPassenger.toFixed(1)} km</td>
+            <td style="color: #34d399; font-weight: 600;">+${item.credit.toFixed(2)} €</td>
+            <td style="color: #fbbf24; font-weight: 600;">-${item.debit.toFixed(2)} €</td>
+            <td>
+              <span class="pill ${isPayout ? 'pill-green' : (isDebt ? 'pill-red' : 'pill-blue')}">
+                ${item.balance >= 0 ? '+' : ''}${item.balance.toFixed(2)} €
+              </span>
+            </td>
+            <td>
+              <strong>${isPayout ? '🟢 Auszahlung an Fahrer' : (isDebt ? '🔴 Nachzahlung in Kasse' : '⚪ Ausgeglichen')}</strong>
+            </td>
+          </tr>
+        `;
+      }).join('');
+
+      if (showToast) {
+        alert('Monatsabrechnung für Oktober 2026 erfolgreich berechnet und abgeglichen!');
+      }
+    }
+
+    function populateDropdowns() {
+      const originSel = document.getElementById('calcOrigin');
+      const destSel = document.getElementById('calcDestination');
+      if (originSel && destSel) {
+        originSel.innerHTML = state.participants.map(p => `<option value="${p.address}">${p.firstName} ${p.lastName} (${p.address})</option>`).join('');
+        destSel.innerHTML = state.destinations.map(d => `<option value="${d.address}">${d.name} (${d.address})</option>`).join('');
+      }
+
+      const rDriver = document.getElementById('rDriver');
+      const rDest = document.getElementById('rDestination');
+      if (rDriver && rDest) {
+        rDriver.innerHTML = state.participants.map(p => `<option value="${p.id}">${p.firstName} ${p.lastName} (${p.role})</option>`).join('');
+        rDest.innerHTML = state.destinations.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+      }
+    }
+
+    function testCalculateDistance() {
+      const origin = document.getElementById('calcOrigin').value;
+      const dest = document.getElementById('calcDestination').value;
+      const est = calculateDistanceEstimate(origin, dest);
+      const cost = est.km * state.kmRate;
+
+      document.getElementById('calcResultKm').textContent = est.km.toFixed(1) + ' km • ' + est.min + ' Min.';
+      document.getElementById('calcResultRoute').textContent = 'Start: ' + origin + ' ➔ Ziel: ' + dest;
+      document.getElementById('calcResultCost').textContent = cost.toFixed(2) + ' €';
+      document.getElementById('calcResultBox').style.display = 'block';
+    }
+
+    // Modal helpers
+    function openParticipantModal() {
+      document.getElementById('pFirstName').value = '';
+      document.getElementById('pLastName').value = '';
+      document.getElementById('pAddress').value = '';
+      document.getElementById('pEmail').value = '';
+      document.getElementById('pPhone').value = '';
+      document.getElementById('modalParticipant').style.display = 'flex';
+    }
+
+    function saveParticipantFromModal() {
+      const fn = document.getElementById('pFirstName').value.trim();
+      const ln = document.getElementById('pLastName').value.trim();
+      const addr = document.getElementById('pAddress').value.trim();
+      if (!fn || !ln || !addr) return alert('Bitte Vorname, Nachname und Adresse angeben!');
+
+      state.participants.push({
+        id: 'T-' + (1001 + state.participants.length),
+        firstName: fn,
+        lastName: ln,
+        address: addr,
+        email: document.getElementById('pEmail').value.trim(),
+        phone: document.getElementById('pPhone').value.trim(),
+        role: document.getElementById('pRole').value,
+        isActive: true
+      });
+      closeModals();
+      renderAll();
+    }
+
+    function openDestinationModal() {
+      document.getElementById('dName').value = '';
+      document.getElementById('dAddress').value = '';
+      document.getElementById('dContact').value = '';
+      document.getElementById('dNotes').value = '';
+      document.getElementById('modalDestination').style.display = 'flex';
+    }
+
+    function saveDestinationFromModal() {
+      const n = document.getElementById('dName').value.trim();
+      const addr = document.getElementById('dAddress').value.trim();
+      if (!n || !addr) return alert('Bitte Firmenname und Adresse angeben!');
+
+      state.destinations.push({
+        id: 'Z-' + (2001 + state.destinations.length),
+        name: n,
+        address: addr,
+        contact: document.getElementById('dContact').value.trim(),
+        notes: document.getElementById('dNotes').value.trim()
+      });
+      closeModals();
+      renderAll();
+    }
+
+    function openRideModal() {
+      document.getElementById('rDate').value = new Date().toISOString().slice(0, 10);
+      populateDropdowns();
+      renderRidePaxCheckboxes();
+      updateRideCostPreview();
+      document.getElementById('modalRide').style.display = 'flex';
+    }
+
+    function renderRidePaxCheckboxes() {
+      const driverId = document.getElementById('rDriver').value;
+      const cont = document.getElementById('rPassengersContainer');
+      cont.innerHTML = state.participants.filter(p => p.id !== driverId).map(p => `
+        <label style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; color: #fff; background: #1e293b; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+          <input type="checkbox" value="${p.id}" class="r-pax-cb" onchange="updateRideCostPreview()">
+          ${p.firstName} ${p.lastName}
+        </label>
+      `).join('');
+    }
+
+    function onRideDriverChanged() {
+      renderRidePaxCheckboxes();
+      updateRideCostPreview();
+    }
+
+    function onRideDestinationChanged() {
+      autoFetchGoogleMapsForRide();
+    }
+
+    function autoFetchGoogleMapsForRide() {
+      const driverId = document.getElementById('rDriver').value;
+      const destId = document.getElementById('rDestination').value;
+      const driver = state.participants.find(p => p.id === driverId);
+      const dest = state.destinations.find(d => d.id === destId);
+      if (driver && dest) {
+        const est = calculateDistanceEstimate(driver.address, dest.address);
+        document.getElementById('rDistance').value = est.km;
+        updateRideCostPreview();
+      }
+    }
+
+    function updateRideCostPreview() {
+      const dist = parseFloat(document.getElementById('rDistance').value) || 0;
+      const dir = document.getElementById('rDirection').value;
+      const effKm = dist * (dir.includes('Rück') ? 2 : 1);
+      const cbs = document.querySelectorAll('.r-pax-cb:checked');
+      const paxCount = cbs.length;
+      const occ = 1 + paxCount;
+      const totCost = effKm * state.kmRate;
+      const perPax = totCost / occ;
+      const driverCredit = perPax * paxCount;
+
+      document.getElementById('rPreviewKm').textContent = effKm.toFixed(1) + ' km';
+      document.getElementById('rPreviewTotal').textContent = totCost.toFixed(2) + ' €';
+      document.getElementById('rPreviewPerPax').textContent = perPax.toFixed(2) + ' €';
+      document.getElementById('rPreviewDriver').textContent = driverCredit.toFixed(2) + ' €';
+    }
+
+    function saveRideFromModal() {
+      const dId = document.getElementById('rDriver').value;
+      const zId = document.getElementById('rDestination').value;
+      const dist = parseFloat(document.getElementById('rDistance').value) || 0;
+      const paxIds = Array.from(document.querySelectorAll('.r-pax-cb:checked')).map(cb => cb.value);
+
+      state.rides.push({
+        id: 'F-' + (3001 + state.rides.length),
+        date: document.getElementById('rDate').value,
+        driverId: dId,
+        passengerIds: paxIds,
+        destinationId: zId,
+        distanceKm: dist,
+        direction: document.getElementById('rDirection').value,
+        notes: ''
+      });
+      closeModals();
+      renderAll();
+    }
+
+    function deleteParticipant(id) {
+      if (confirm('Teilnehmer wirklich entfernen?')) {
+        state.participants = state.participants.filter(p => p.id !== id);
+        renderAll();
+      }
+    }
+
+    function deleteDestination(id) {
+      if (confirm('Firmenziel wirklich entfernen?')) {
+        state.destinations = state.destinations.filter(d => d.id !== id);
+        renderAll();
+      }
+    }
+
+    function deleteRide(id) {
+      if (confirm('Fahrt wirklich löschen?')) {
+        state.rides = state.rides.filter(r => r.id !== id);
+        renderAll();
+      }
+    }
+
+    function closeModals() {
+      document.querySelectorAll('.modal-backdrop').forEach(el => el.style.display = 'none');
+    }
+
+    function copyBillingCsv() {
+      let csv = 'Teilnehmer;Fahrten_Fahrer;Fahrten_Mitfahrer;km_Fahrer;km_Mitfahrer;Gutschrift_EUR;Lastschrift_EUR;Netto_Saldo_EUR\n';
+      state.billingRecords.forEach(r => {
+        csv += `${r.name};${r.ridesAsDriver};${r.ridesAsPassenger};${r.kmDriver.toFixed(1)};${r.kmPassenger.toFixed(1)};${r.credit.toFixed(2)};${r.debit.toFixed(2)};${r.balance.toFixed(2)}\n`;
+      });
+      navigator.clipboard.writeText(csv).then(() => {
+        alert('CSV-Abrechnung in die Zwischenablage kopiert! Kann direkt in Excel eingefügt werden.');
+      });
+    }
+
+    function toggleMockMode(isMock) {
+      state.isMock = isMock;
+      const st = document.getElementById('connStatus');
+      if (isMock) {
+        st.textContent = '● Lokale Testdaten aktiv (Mock-Modus)';
+        st.style.color = '#fbbf24';
+      } else {
+        st.textContent = '● Live Google Apps Script Modus';
+        st.style.color = '#34d399';
+      }
+    }
+
+    function saveSettings() {
+      state.webAppUrl = document.getElementById('settingWebAppUrl').value.trim();
+      state.kmRate = parseFloat(document.getElementById('settingKmRate').value) || 0.30;
+      alert('Einstellungen gespeichert!');
+      renderAll();
+    }
+
+    async function testServerPing() {
+      const url = document.getElementById('settingWebAppUrl').value.trim();
+      const resEl = document.getElementById('pingResult');
+      if (!url) {
+        alert('Bitte zuerst die Web App URL eintragen!');
+        return;
+      }
+      resEl.style.display = 'block';
+      resEl.textContent = 'Verbindung wird getestet (doGet ?action=ping)...';
+      resEl.style.background = '#1e293b';
+
+      try {
+        const pingUrl = url + (url.includes('?') ? '&' : '?') + 'action=ping';
+        const resp = await fetch(pingUrl);
+        const data = await resp.json();
+        if (data && data.success) {
+          resEl.style.background = '#064e3b';
+          resEl.textContent = '✅ Erfolg: Verbindung zum Google Apps Script Server steht! Server-Zeit: ' + (data.data.serverTime || '');
+        } else {
+          resEl.style.background = '#7f1d1d';
+          resEl.textContent = '⚠️ Server antwortete mit Fehler: ' + JSON.stringify(data);
+        }
+      } catch (err) {
+        resEl.style.background = '#7f1d1d';
+        resEl.textContent = '❌ Fehler beim Verbinden: ' + err.message + ' (Prüfen Sie, ob die Web-App für "Jeder" freigegeben ist).';
+      }
+    }
+
+    // Initialize
+    window.addEventListener('DOMContentLoaded', () => {
+      renderAll();
+    });
+  </script>
+</body>
+</html>
